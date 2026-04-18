@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -8,10 +9,10 @@
     <style>
         :root {
             --primary: #2D5AFE;    /* Azul Moderno */
-            --secondary: #00D084;  /* Verde de Ã©xito */
+            --secondary: #00D084;  /* Verde de éxito */
             --bg: #F8FAFC;         /* Fondo claro y limpio */
             --card: #FFFFFF;
-            --text-title: #1E293B; /* Azul grisÃ¡ceo oscuro */
+            --text-title: #1E293B; /* Azul grisáceo oscuro */
             --text-body: #64748B;  /* Gris profesional */
             --border: #E2E8F0;
         }
@@ -187,7 +188,7 @@
             margin-top: 15px;
         }
 
-        /* --- COMPONENTES DINÃMICOS --- */
+        /* --- COMPONENTES DINÁMICOS --- */
         .screen { display: none; }
         .screen.active { display: block; }
 
@@ -223,7 +224,7 @@
             </div>
             <h1>BolsoApp</h1>
             <div class="description">
-                La forma mÃ¡s segura y moderna de gestionar tus grupos de ahorro con amigos y familiares.
+                La forma más segura y moderna de gestionar tus grupos de ahorro con amigos y familiares.
             </div>
             
             <button class="btn-primary" onclick="showRegister()">Registrate</button>
@@ -234,10 +235,10 @@
             </div>
             
             <div class="legal-links">
-                <a href="#" onclick="showTermsModal()">TÃ©rminos</a>
+                <a href="#" onclick="showTermsModal()">Términos</a>
                 <a href="#" onclick="showPrivacyModal()">Privacidad</a>
             </div>
-            <div class="version">VersiÃ³n 1.0.0</div>
+            <div class="version">Versión 1.0.0</div>
         </div>
     </div>
 
@@ -247,19 +248,19 @@
             <div class="subtitle">Paso 1 de 1</div>
             
             <div class="input-group"><input type="text" id="regName" placeholder="Nombre completo"></div>
-            <div class="input-group"><input type="email" id="regEmail" placeholder="Correo electrÃ³nico"></div>
-            <div class="input-group"><input type="tel" id="regPhone" placeholder="TelÃ©fono"></div>
-            <div class="input-group"><input type="text" id="regCedula" placeholder="CÃ©dula (V-12345678)"></div>
-            <div class="input-group"><input type="text" id="regAddress" placeholder="DirecciÃ³n"></div>
+            <div class="input-group"><input type="email" id="regEmail" placeholder="Correo electrónico"></div>
+            <div class="input-group"><input type="tel" id="regPhone" placeholder="Teléfono"></div>
+            <div class="input-group"><input type="text" id="regCedula" placeholder="Cédula (V-12345678)"></div>
+            <div class="input-group"><input type="text" id="regAddress" placeholder="Dirección"></div>
             
             <div class="input-group">
-                <input type="password" id="regPassword" placeholder="ContraseÃ±a (8+ caracteres)">
-                <button class="toggle-password" onclick="togglePassword('regPassword', this)">ðŸ‘ï¸</button>
+                <input type="password" id="regPassword" placeholder="Contraseña (8+ caracteres)">
+                <button class="toggle-password" onclick="togglePassword('regPassword', this)">👁️</button>
             </div>
             
             <div class="input-group">
-                <input type="password" id="regConfirmPassword" placeholder="Confirmar contraseÃ±a">
-                <button class="toggle-password" onclick="togglePassword('regConfirmPassword', this)">ðŸ‘ï¸</button>
+                <input type="password" id="regConfirmPassword" placeholder="Confirmar contraseña">
+                <button class="toggle-password" onclick="togglePassword('regConfirmPassword', this)">👁️</button>
             </div>
             
             <button class="btn-primary" id="registerBtn" style="margin-top: 10px;">Crear cuenta</button>
@@ -273,12 +274,12 @@
             <div class="subtitle">Ingresa a tu cuenta</div>
             
             <div class="input-group">
-                <input type="email" id="loginEmail" placeholder="Correo electrÃ³nico">
+                <input type="email" id="loginEmail" placeholder="Correo electrónico">
             </div>
             
             <div class="input-group">
-                <input type="password" id="loginPassword" placeholder="ContraseÃ±a">
-                <button class="toggle-password" onclick="togglePassword('loginPassword', this)">ðŸ‘ï¸</button>
+                <input type="password" id="loginPassword" placeholder="Contraseña">
+                <button class="toggle-password" onclick="togglePassword('loginPassword', this)">👁️</button>
             </div>
             
             <button class="btn-primary" id="loginBtn">Ingresar</button>
@@ -291,7 +292,7 @@
         function togglePassword(inputId, btn) {
             const input = document.getElementById(inputId);
             input.type = input.type === 'password' ? 'text' : 'password';
-            btn.textContent = input.type === 'password' ? 'ðŸ‘ï¸' : 'ðŸ™ˆ';
+            btn.textContent = input.type === 'password' ? '👁️' : '🙈';
         }
 
         function showToast(msg, type = 'info') {
@@ -304,7 +305,7 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // --- NAVEGACIÃ“N ---
+        // --- NAVEGACIÓN ---
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -313,19 +314,19 @@
         const showRegister = () => showScreen('registerScreen');
         const showLogin = () => showScreen('loginScreen');
 
-        // --- LÃ“GICA DE REGISTRO (Firebase Simulado/Configurado) ---
+        // --- LÓGICA DE REGISTRO (Firebase Simulado/Configurado) ---
         async function registerWithFirebase() {
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
             
             if(!email || password.length < 8) {
-                showToast('Datos incompletos o contraseÃ±a corta', 'error');
+                showToast('Datos incompletos o contraseña corta', 'error');
                 return;
             }
 
             try {
                 showToast('Procesando registro...', 'info');
-                // AquÃ­ irÃ­a tu lÃ³gica de Firebase Import
+                // Aquí iría tu lógica de Firebase Import
                 const { auth, db } = await import('./firebase-config.js');
                 const { createUserWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
                 const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
@@ -336,7 +337,7 @@
                     registeredAt: new Date().toISOString()
                 });
 
-                showToast('Â¡Cuenta creada!', 'success');
+                showToast('¡Cuenta creada!', 'success');
                 setTimeout(() => window.location.href = 'pages/dashboard.html', 1500);
             } catch (e) {
                 showToast('Error: ' + e.message, 'error');
@@ -360,7 +361,7 @@
             }
         }
 
-        // --- INICIALIZACIÃ“N ---
+        // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('registerBtn').onclick = registerWithFirebase;
             document.getElementById('loginBtn').onclick = loginWithFirebase;
