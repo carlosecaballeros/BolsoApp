@@ -25,19 +25,19 @@
 <body>
     <div class="container">
         <header style="margin-bottom: 25px;">
-            <h1>Hola, <span id="userName">...</span> 👋</h1>
+            <h1>Hola, <span id="userName">Cargando...</span> 👋</h1>
             <p style="color: var(--text-muted);">Este es el estado de tu ahorro.</p>
         </header>
 
         <div class="balance-card">
             <p class="balance-label">Total en mis Bolsos</p>
             <p class="balance-amount" id="totalAhorro">$0.00</p>
-            <p style="font-size: 12px;" id="estadoCuenta">Estado: Verificando...</p>
+            <p style="font-size: 12px;" id="statusAccount">Verificando cuenta...</p>
         </div>
 
         <h3>Actividad reciente</h3>
         <div style="background: white; padding: 15px; border-radius: 18px; margin-top: 10px; border: 1px solid var(--border);">
-            <p id="actividadText" style="font-size: 14px;">Cargando actividad...</p>
+            <p id="activityLog" style="font-size: 14px;">Buscando actualizaciones...</p>
         </div>
     </div>
 
@@ -51,40 +51,41 @@
     </nav>
 
     <script type="module">
-        // Importamos con la ruta correcta hacia afuera de la carpeta /pages
+        // Importación corregida: salimos de la carpeta /pages para buscar la config
         import { auth, db } from '../firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Observador de la sesión
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                console.log("✅ Usuario autenticado:", user.email);
+                console.log("✅ Usuario detectado:", user.email);
                 
                 try {
-                    // Validamos que 'db' exista antes de llamar a Firestore
-                    if (!db) {
-                        throw new Error("La base de datos (db) no está inicializada. Revisa firebase-config.js");
-                    }
+                    // Verificación de seguridad para la base de datos
+                    if (!db) throw new Error("Firestore (db) no está inicializado.");
 
-                    const docRef = doc(db, "usuarios", user.uid);
-                    const docSnap = await getDoc(docRef);
+                    const userDocRef = doc(db, "usuarios", user.uid);
+                    const docSnap = await getDoc(userDocRef);
 
                     if (docSnap.exists()) {
-                        const datos = docSnap.data();
-                        document.getElementById('userName').innerText = datos.nombre || "Usuario";
-                        document.getElementById('estadoCuenta').innerText = "Estado: Cuenta Activa";
-                        document.getElementById('actividadText').innerText = "No hay actividad reciente.";
+                        const userData = docSnap.data();
+                        document.getElementById('userName').innerText = userData.nombre || "Usuario";
+                        document.getElementById('statusAccount').innerText = "Estado: Cuenta Activa";
+                        document.getElementById('activityLog').innerText = "No hay actividad reciente.";
                     } else {
-                        console.warn("No se encontraron datos en Firestore para este UID.");
-                        document.getElementById('userName').innerText = "Usuario Nuevo";
+                        document.getElementById('userName').innerText = "Usuario";
+                        document.getElementById('activityLog').innerText = "Completa tu perfil para ver actividad.";
                     }
+
                 } catch (error) {
-                    console.error("❌ Error al obtener datos:", error);
-                    alert("Error de conexión: Revisa que firebase-config.js esté bien configurado.");
+                    console.error("❌ Error Firestore:", error);
+                    // Si falla Firestore, al menos mostramos el correo del usuario
+                    document.getElementById('userName').innerText = user.email.split('@')[0];
                 }
             } else {
-                console.log("❌ Sin sesión. Redirigiendo...");
-                // Pequeño retraso para evitar rebotes falsos por internet lento
+                console.log("⚠️ Sin sesión. Redirigiendo...");
+                // Damos un margen de 2 segundos antes de echar al usuario por si el internet está lento
                 setTimeout(() => {
                     if (!auth.currentUser) window.location.href = "../index.html";
                 }, 2000);
