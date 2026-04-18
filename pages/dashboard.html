@@ -5,48 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Inicio - BolsoApp</title>
     <style>
+        /* [Tus estilos de antes...] */
         :root { --primary: #2D5AFE; --bg: #F8FAFC; --card: #FFFFFF; --text-main: #1E293B; --text-muted: #64748B; --border: #E2E8F0; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 110px; }
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 110px; display: none; } /* OCULTAMOS TODO EL BODY POR DEFECTO */
         
-        .balance-card { background: var(--primary); color: white; padding: 25px; border-radius: 24px; margin-bottom: 20px; }
-        .balance-label { font-size: 14px; opacity: 0.8; }
-        .balance-amount { font-size: 32px; font-weight: 800; margin: 5px 0; }
-
-        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0 25px; border-top: 1px solid var(--border); z-index: 1000; }
-        .tab-item { position: relative; text-align: center; text-decoration: none; color: var(--text-muted); font-size: 10px; font-weight: 600; width: 20%; z-index: 2; }
-        .tab-item.active { color: var(--primary); }
-        .tab-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-        .tab-indicator { position: absolute; top: 8px; left: 0; height: 48px; width: 20%; background: rgba(45, 90, 254, 0.1); border-radius: 14px; z-index: 1; transition: 0.3s; }
-        .pos-0 { transform: translateX(0%); }
+        /* Pantalla de carga */
+        #loader { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: white; display: flex; justify-content: center; align-items: center; z-index: 9999; 
+        }
     </style>
 </head>
 <body>
+    <div id="loader">
+        <div style="text-align: center;">
+            <img src="assets/BolsoApp.png" style="width: 80px; margin-bottom: 10px;">
+            <p>Verificando sesión...</p>
+        </div>
+    </div>
+
     <div class="container">
         <header style="margin-bottom: 25px;">
-            <h1>Hola, <span id="userName">Cargando...</span> 👋</h1>
+            <h1>Hola, <span id="userName">...</span> 👋</h1>
             <p style="color: var(--text-muted);">Este es el estado de tu ahorro.</p>
         </header>
 
         <div class="balance-card">
             <p class="balance-label">Total en mis Bolsos</p>
             <p class="balance-amount" id="totalAhorro">$0.00</p>
-            <p style="font-size: 12px;">Próximo cobro: Pendiente</p>
-        </div>
-
-        <h3>Actividad reciente</h3>
-        <div style="background: white; padding: 15px; border-radius: 18px; margin-top: 10px; border: 1px solid var(--border);">
-            <p id="mensajeActividad" style="font-size: 14px;">No hay actividad reciente.</p>
         </div>
     </div>
 
     <nav class="tab-bar">
-        <div class="tab-indicator pos-0"></div>
         <a href="dashboard.html" class="tab-item active"><span class="tab-icon">🏠</span>Inicio</a>
-        <a href="groups.html" class="tab-item"><span class="tab-icon">➕</span>Unirse</a>
-        <a href="payments.html" class="tab-item"><span class="tab-icon">💳</span>Pagos</a>
-        <a href="my-group.html" class="tab-item"><span class="tab-icon">👥</span>Grupo</a>
         <a href="profile.html" class="tab-item"><span class="tab-icon">⚙️</span>Perfil</a>
     </nav>
 
@@ -55,28 +47,28 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Observador de la sesión
+        const loader = document.getElementById('loader');
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // El usuario está logueado, buscamos su nombre en Firestore
+                console.log("Usuario detectado:", user.uid);
+                
+                // 1. Buscamos los datos en Firestore
                 try {
-                    const docRef = doc(db, "usuarios", user.uid);
-                    const docSnap = await getDoc(docRef);
-
+                    const docSnap = await getDoc(doc(db, "usuarios", user.uid));
                     if (docSnap.exists()) {
                         document.getElementById('userName').innerText = docSnap.data().nombre;
-                    } else {
-                        document.getElementById('userName').innerText = "Usuario";
                     }
-                } catch (error) {
-                    console.error("Error obteniendo datos:", error);
-                }
+                } catch (e) { console.error(e); }
+
+                // 2. MOSTRAR LA PÁGINA Y QUITAR EL LOADER
+                document.body.style.display = "block";
+                loader.style.display = "none";
+
             } else {
-                // SI NO HAY USUARIO, REDIRIGE AL LOGIN DESPUÉS DE 2 SEGUNDOS
-                console.log("No hay sesión activa, redirigiendo...");
-                setTimeout(() => {
-                    window.location.href = "index.html"; 
-                }, 2000);
+                // Si realmente no hay usuario, mandamos al index
+                console.log("No hay sesión, redirigiendo...");
+                window.location.href = "index.html";
             }
         });
     </script>
