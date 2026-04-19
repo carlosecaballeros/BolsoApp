@@ -5,31 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel BolsoApp</title>
     <style>
-        :root { --blue: #2D5AFE; --bg: #f4f7f6; --text: #1e293b; }
+        :root { --blue: #2D5AFE; --bg: #f4f7f6; --text: #1e293b; --success: #22c55e; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--text); display: none; }
-        .header { background: var(--blue); color: white; padding: 30px 20px; border-radius: 0 0 25px 25px; text-align: center; }
-        .card { background: white; margin: -20px 15px 15px; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .balance { font-size: 28px; font-weight: bold; color: var(--blue); margin: 10px 0; }
-        .group-item { background: #eef2ff; padding: 12px; border-radius: 10px; margin-top: 10px; border-left: 4px solid var(--blue); }
-        .logout-btn { background: #ff4757; color: white; border: none; padding: 12px; width: 80%; border-radius: 10px; margin: 20px auto; display: block; cursor: pointer; }
+        .header { background: var(--blue); color: white; padding: 40px 20px 60px; border-radius: 0 0 30px 30px; text-align: center; }
+        .card { background: white; margin: -30px 15px 20px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .balance-label { color: #64748b; font-size: 14px; margin-bottom: 5px; }
+        .balance-amount { font-size: 36px; font-weight: 800; color: var(--blue); }
+        .section-title { margin: 20px 20px 10px; font-size: 18px; font-weight: 700; }
+        .list-container { margin: 0 15px 100px; }
+        .item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #edf2f7; }
+        .item-info b { display: block; font-size: 15px; }
+        .item-info span { font-size: 12px; color: #94a3b8; }
+        .item-monto { font-weight: 700; color: var(--success); }
+        .logout-btn { background: #fee2e2; color: #ef4444; border: none; padding: 12px; width: 60%; border-radius: 12px; margin: 30px auto; display: block; cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Hola, <span id="userName">Cargando...</span></h1>
-        <p id="userCedula" style="opacity: 0.8; font-size: 14px;"></p>
+        <h1 style="margin:0; font-size: 24px;">¡Hola, <span id="userName">...</span>!</h1>
+        <p id="userCedula" style="opacity: 0.8; font-size: 13px; margin-top: 5px;"></p>
     </div>
 
     <div class="card">
-        <p style="color: #64748b; font-size: 14px; margin: 0;">Saldo Actual</p>
-        <div class="balance" id="userBalance">$0.00</div>
-        <small id="statusSaldo" style="color: #94a3b8; font-size: 10px;"></small>
+        <div class="balance-label">Tu saldo disponible</div>
+        <div class="balance-amount" id="userBalance">$0.00</div>
     </div>
 
-    <div class="card">
-        <h3>Mis Grupos (Bolsos)</h3>
-        <div id="groupsList"><p style="font-size: 13px; color: #94a3b8;">Buscando tus grupos...</p></div>
+    <div class="section-title">Mis Bolsos (Grupos)</div>
+    <div class="list-container" id="groupsList">
+        <p style="padding-left: 5px; color: #94a3b8;">Cargando grupos...</p>
+    </div>
+
+    <div class="section-title">Últimos Movimientos</div>
+    <div class="list-container" id="movesList">
+        <p style="padding-left: 5px; color: #94a3b8;">No hay movimientos recientes.</p>
     </div>
 
     <button class="logout-btn" onclick="salir()">Cerrar Sesión</button>
@@ -42,58 +52,65 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.body.style.display = "block";
-                console.log("Usuario conectado ID:", user.uid);
                 
                 try {
-                    // 1. Cargar Perfil
+                    // 1. CARGAR PERFIL
                     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
                     if (userSnap.exists()) {
-                        document.getElementById('userName').innerText = userSnap.data().name || "Usuario";
-                        document.getElementById('userCedula').innerText = "C.I: " + (userSnap.data().cedula || "N/A");
+                        const d = userSnap.data();
+                        document.getElementById('userName').innerText = d.name.split(' ')[0]; // Solo el primer nombre
+                        document.getElementById('userCedula').innerText = "C.I: " + (d.cedula || "N/A");
                     }
 
-                    // 2. Cargar Saldo en Tiempo Real
-                    const qMov = query(
-                        collection(db, "movimientos"), 
-                        where("usuarioId", "==", user.uid), 
-                        orderBy("saldoPosterior", "desc"), 
-                        limit(1)
-                    );
-
+                    // 2. SALDO E HISTORIAL (En tiempo real)
+                    const qMov = query(collection(db, "movimientos"), where("usuarioId", "==", user.uid), orderBy("saldoPosterior", "desc"));
                     onSnapshot(qMov, (snap) => {
+                        const movesContainer = document.getElementById('movesList');
                         if (!snap.empty) {
-                            snap.forEach(d => {
-                                document.getElementById('userBalance').innerText = "$" + d.data().saldoPosterior.toLocaleString();
-                                document.getElementById('statusSaldo').innerText = "Actualizado";
+                            // Actualizar Saldo Principal (el más reciente)
+                            document.getElementById('userBalance').innerText = "$" + snap.docs[0].data().saldoPosterior.toLocaleString();
+                            
+                            // Llenar lista de movimientos
+                            movesContainer.innerHTML = "";
+                            snap.forEach(docMov => {
+                                const m = docMov.data();
+                                movesContainer.innerHTML += `
+                                    <div class="item">
+                                        <div class="item-info">
+                                            <b>Pago realizado</b>
+                                            <span>ID: ${docMov.id.substring(0,8)}</span>
+                                        </div>
+                                        <div class="item-monto">+$${m.saldoPosterior.toLocaleString()}</div>
+                                    </div>`;
                             });
-                        } else {
-                            document.getElementById('statusSaldo').innerText = "No se encontraron movimientos para este ID";
                         }
                     });
 
-                    // 3. Cargar Grupos
+                    // 3. CARGAR GRUPOS
                     const qPart = query(collection(db, "participantes_grupo"), where("usuarioId", "==", user.uid));
-                    onSnapshot(qPart, async (snapPart) => {
-                        const listHtml = document.getElementById('groupsList');
+                    onSnapshot(qPart, (snapPart) => {
+                        const groupContainer = document.getElementById('groupsList');
+                        groupContainer.innerHTML = "";
                         if (snapPart.empty) {
-                            listHtml.innerHTML = "<p>No tienes grupos activos.</p>";
-                        } else {
-                            listHtml.innerHTML = "";
-                            for (const docPart of snapPart.docs) {
-                                const gSnap = await getDoc(doc(db, "grupos", docPart.data().grupoId));
-                                if (gSnap.exists()) {
-                                    const gData = gSnap.data();
-                                    listHtml.innerHTML += `
-                                        <div class="group-item">
-                                            <b>${gData.nombre}</b><br>
-                                            <small>Monto: $${gData.monto} | Sem: ${gData.semanaActual}</small>
-                                        </div>`;
-                                }
-                            }
+                            groupContainer.innerHTML = "<p style='color:#94a3b8'>No estás en ningún grupo.</p>";
                         }
+                        snapPart.forEach(async (docPart) => {
+                            const gSnap = await getDoc(doc(db, "groups", docPart.data().grupoId));
+                            if (gSnap.exists()) {
+                                const g = gSnap.data();
+                                groupContainer.innerHTML += `
+                                    <div class="item" style="border-left: 5px solid var(--blue)">
+                                        <div class="item-info">
+                                            <b>${g.nombre}</b>
+                                            <span>Semana actual: ${g.semanaActual}</span>
+                                        </div>
+                                        <div style="font-weight:bold; color:var(--blue)">$${g.monto}</div>
+                                    </div>`;
+                            }
+                        });
                     });
 
-                } catch (e) { console.error("Error general:", e); }
+                } catch (e) { console.error("Error:", e); }
             } else { window.location.href = "login.html"; }
         });
 
