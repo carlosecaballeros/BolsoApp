@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BolsoApp - Bienvenida</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f8fafc; color: #1e293b; text-align: center; }
+        .welcome-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; width: 90%; }
+        img { width: 120px; margin-bottom: 20px; }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #2D5AFE; }
+        p { color: #64748b; margin-bottom: 30px; line-height: 1.6; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; text-decoration: none; font-weight: bold; transition: 0.3s; box-sizing: border-box; }
+        .btn-login { background: #2D5AFE; color: white; }
+        .btn-register { border: 2px solid #2D5AFE; color: #2D5AFE; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="welcome-card">
+        <img src="BolsoApp.png" alt="BolsoApp Logo">
+        <h1>¡Bienvenido!</h1>
+        <p>Gestiona tus ahorros de forma fácil, segura y desde cualquier lugar.</p>
+        
+        <a href="login.html" class="btn btn-login">Iniciar Sesión</a>
+        <a href="register.html" class="btn btn-register">Crear una cuenta</a>
+    </div>
+
+</body>
+</html>
