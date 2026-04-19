@@ -68,7 +68,7 @@
                         const movesContainer = document.getElementById('movesList');
                         if (!snap.empty) {
                             // Actualizar Saldo Principal (el más reciente)
-                            document.getElementById('userBalance').innerText = "Bs " + snap.docs[0].data().saldoPosterior.toLocaleString();
+                            document.getElementById('userBalance').innerText = "$" + snap.docs[0].data().saldoPosterior.toLocaleString();
                             
                             // Llenar lista de movimientos
                             movesContainer.innerHTML = "";
@@ -80,7 +80,7 @@
                                             <b>Pago realizado</b>
                                             <span>ID: ${docMov.id.substring(0,8)}</span>
                                         </div>
-                                        <div class="item-monto">${m.saldoPosterior.toLocaleString()}</div>
+                                        <div class="item-monto">+$${m.saldoPosterior.toLocaleString()}</div>
                                     </div>`;
                             });
                         }
