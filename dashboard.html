@@ -2,115 +2,202 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel BolsoApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BolsoApp</title>
     <style>
-        :root { --blue: #2D5AFE; --bg: #f4f7f6; --text: #1e293b; --success: #22c55e; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--text); display: none; }
-        .header { background: var(--blue); color: white; padding: 40px 20px 60px; border-radius: 0 0 30px 30px; text-align: center; }
-        .card { background: white; margin: -30px 15px 20px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .balance-label { color: #64748b; font-size: 14px; margin-bottom: 5px; }
-        .balance-amount { font-size: 36px; font-weight: 800; color: var(--blue); }
-        .section-title { margin: 20px 20px 10px; font-size: 18px; font-weight: 700; }
-        .list-container { margin: 0 15px 100px; }
-        .item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #edf2f7; }
-        .item-info b { display: block; font-size: 15px; }
-        .item-info span { font-size: 12px; color: #94a3b8; }
-        .item-monto { font-weight: 700; color: var(--success); }
-        .logout-btn { background: #fee2e2; color: #ef4444; border: none; padding: 12px; width: 60%; border-radius: 12px; margin: 30px auto; display: block; cursor: pointer; font-weight: 600; }
+        :root { 
+            --blue: #2D5AFE; 
+            --bg: #F0F2F5; 
+            --text: #1C1E21; 
+            --success: #00A33C;
+            --white: #ffffff;
+        }
+
+        /* Reset para móviles */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; /* Quita el destello azul al tocar */
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text); 
+            display: none; /* Se activa con Firebase */
+            overflow-x: hidden; /* Evita que se mueva hacia los lados */
+            user-select: none; /* Evita que el usuario seleccione texto por error */
+        }
+
+        /* Cabecera estilo App */
+        .header { 
+            background: var(--blue); 
+            color: var(--white); 
+            padding: 50px 20px 70px; 
+            border-radius: 0 0 40px 40px; 
+            text-align: left;
+        }
+
+        .header h1 { margin: 0; font-size: 26px; font-weight: 800; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+
+        /* Contenedor principal */
+        .app-container {
+            width: 100%;
+            padding: 0 16px;
+            margin-top: -40px;
+        }
+
+        /* Tarjeta de Saldo */
+        .card-balance { 
+            background: var(--white); 
+            padding: 24px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+        }
+
+        .label { color: #8E8E93; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .amount { font-size: 38px; font-weight: 800; color: var(--blue); margin-top: 8px; }
+
+        /* Secciones */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 24px 8px 12px;
+        }
+
+        .section-header h3 { margin: 0; font-size: 18px; font-weight: 700; }
+
+        /* Lista de elementos (Bolsos/Movimientos) */
+        .list { display: flex; flex-direction: column; gap: 12px; }
+
+        .item { 
+            background: var(--white); 
+            padding: 16px; 
+            border-radius: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            transition: transform 0.1s;
+        }
+
+        .item:active { transform: scale(0.98); } /* Efecto de pulsación */
+
+        .item-info b { display: block; font-size: 15px; margin-bottom: 4px; }
+        .item-info span { font-size: 12px; color: #8E8E93; }
+
+        .item-value { font-weight: 700; font-size: 16px; color: var(--blue); }
+        .plus { color: var(--success); }
+
+        /* Botón de Salida */
+        .btn-logout { 
+            background: #FFE5E5; 
+            color: #FF3B30; 
+            border: none; 
+            padding: 16px; 
+            width: calc(100% - 32px); 
+            border-radius: 18px; 
+            margin: 40px 16px; 
+            font-weight: 700; 
+            font-size: 16px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1 style="margin:0; font-size: 24px;">¡Hola, <span id="userName">...</span>!</h1>
-        <p id="userCedula" style="opacity: 0.8; font-size: 13px; margin-top: 5px;"></p>
+        <h1>Hola, <span id="userName">...</span></h1>
+        <p id="userCedula"></p>
     </div>
 
-    <div class="card">
-        <div class="balance-label">Tu saldo disponible</div>
-        <div class="balance-amount" id="userBalance">$0.00</div>
+    <div class="app-container">
+        <div class="card-balance">
+            <div class="label">Disponible</div>
+            <div class="amount" id="userBalance">$0.00</div>
+        </div>
+
+        <div class="section-header">
+            <h3>Mis Bolsos</h3>
+        </div>
+        <div class="list" id="groupsList">
+            <p style="text-align: center; color: #8E8E93;">Cargando grupos...</p>
+        </div>
+
+        <div class="section-header">
+            <h3>Actividad</h3>
+        </div>
+        <div class="list" id="movesList">
+            <p style="text-align: center; color: #8E8E93;">No hay actividad.</p>
+        </div>
     </div>
 
-    <div class="section-title">Mis Bolsos (Grupos)</div>
-    <div class="list-container" id="groupsList">
-        <p style="padding-left: 5px; color: #94a3b8;">Cargando grupos...</p>
-    </div>
-
-    <div class="section-title">Últimos Movimientos</div>
-    <div class="list-container" id="movesList">
-        <p style="padding-left: 5px; color: #94a3b8;">No hay movimientos recientes.</p>
-    </div>
-
-    <button class="logout-btn" onclick="salir()">Cerrar Sesión</button>
+    <button class="btn-logout" onclick="salir()">Cerrar Sesión</button>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc, collection, query, where, getDocs, limit, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, getDoc, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.body.style.display = "block";
                 
                 try {
-                    // 1. CARGAR PERFIL
+                    // 1. Datos del usuario
                     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
                     if (userSnap.exists()) {
                         const d = userSnap.data();
-                        document.getElementById('userName').innerText = d.name.split(' ')[0]; // Solo el primer nombre
-                        document.getElementById('userCedula').innerText = "C.I: " + (d.cedula || "N/A");
+                        document.getElementById('userName').innerText = d.name.split(' ')[0];
+                        document.getElementById('userCedula').innerText = "ID: " + (d.cedula || "");
                     }
 
-                    // 2. SALDO E HISTORIAL (En tiempo real)
+                    // 2. Saldo y Movimientos
                     const qMov = query(collection(db, "movimientos"), where("usuarioId", "==", user.uid), orderBy("saldoPosterior", "desc"));
                     onSnapshot(qMov, (snap) => {
                         const movesContainer = document.getElementById('movesList');
                         if (!snap.empty) {
-                            // Actualizar Saldo Principal (el más reciente)
                             document.getElementById('userBalance').innerText = "$" + snap.docs[0].data().saldoPosterior.toLocaleString();
-                            
-                            // Llenar lista de movimientos
                             movesContainer.innerHTML = "";
                             snap.forEach(docMov => {
                                 const m = docMov.data();
                                 movesContainer.innerHTML += `
                                     <div class="item">
                                         <div class="item-info">
-                                            <b>Pago realizado</b>
-                                            <span>ID: ${docMov.id.substring(0,8)}</span>
+                                            <b>Abono realizado</b>
+                                            <span>Ref: ${docMov.id.substring(0,6)}</span>
                                         </div>
-                                        <div class="item-monto">+$${m.saldoPosterior.toLocaleString()}</div>
+                                        <div class="item-value plus">+$${m.saldoPosterior.toLocaleString()}</div>
                                     </div>`;
                             });
                         }
                     });
 
-                    // 3. CARGAR GRUPOS
+                    // 3. Grupos
                     const qPart = query(collection(db, "participantes_grupo"), where("usuarioId", "==", user.uid));
                     onSnapshot(qPart, (snapPart) => {
                         const groupContainer = document.getElementById('groupsList');
                         groupContainer.innerHTML = "";
-                        if (snapPart.empty) {
-                            groupContainer.innerHTML = "<p style='color:#94a3b8'>No estás en ningún grupo.</p>";
-                        }
                         snapPart.forEach(async (docPart) => {
-                            const gSnap = await getDoc(doc(db, "groups", docPart.data().grupoId));
+                            const gSnap = await getDoc(doc(db, "grupos", docPart.data().grupoId));
                             if (gSnap.exists()) {
                                 const g = gSnap.data();
                                 groupContainer.innerHTML += `
-                                    <div class="item" style="border-left: 5px solid var(--blue)">
+                                    <div class="item">
                                         <div class="item-info">
                                             <b>${g.nombre}</b>
-                                            <span>Semana actual: ${g.semanaActual}</span>
+                                            <span>Semana ${g.semanaActual}</span>
                                         </div>
-                                        <div style="font-weight:bold; color:var(--blue)">$${g.monto}</div>
+                                        <div class="item-value">$${g.monto}</div>
                                     </div>`;
                             }
                         });
                     });
 
-                } catch (e) { console.error("Error:", e); }
+                } catch (e) { console.error(e); }
             } else { window.location.href = "login.html"; }
         });
 
