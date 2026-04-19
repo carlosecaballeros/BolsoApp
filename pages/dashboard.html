@@ -2,55 +2,71 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BolsoApp - Dashboard</title>
-    <link rel="stylesheet" href="../stiles.css"> </head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dashboard - BolsoApp</title>
+    <link rel="stylesheet" href="../stiles.css">
+    <style>
+        :root { --primary: #2D5AFE; --bg: #F8FAFC; --card: #FFFFFF; --text-main: #1E293B; --text-muted: #64748B; --border: #E2E8F0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 110px; display: none; } /* Se oculta hasta confirmar sesión */
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .balance-card { background: var(--primary); color: white; padding: 25px; border-radius: 24px; margin-bottom: 20px; }
+        .balance-amount { font-size: 32px; font-weight: 800; margin: 5px 0; }
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0 25px; border-top: 1px solid var(--border); }
+        .tab-item { text-align: center; text-decoration: none; color: var(--text-muted); font-size: 10px; font-weight: 600; width: 20%; }
+        .tab-item.active { color: var(--primary); }
+    </style>
+</head>
 <body>
     <div class="container">
-        <h1>Hola, <span id="userName">Cargando...</span> 👋</h1>
-        <div id="statusAccount">Verificando sesión...</div>
+        <header style="margin-bottom: 25px;">
+            <h1>Hola, <span id="userName">Cargando...</span> 👋</h1>
+            <p style="color: var(--text-muted);">Bienvenido a tu panel de control.</p>
+        </header>
+
+        <div class="balance-card">
+            <p style="font-size: 14px; opacity: 0.8;">Total en mis Bolsos</p>
+            <p class="balance-amount" id="totalAhorro">$0.00</p>
+        </div>
+
+        <h3>Actividad reciente</h3>
+        <div style="background: white; padding: 15px; border-radius: 18px; margin-top: 10px; border: 1px solid var(--border);">
+            <p id="actividadMsg" style="font-size: 14px;">No hay movimientos todavía.</p>
+        </div>
     </div>
 
+    <nav class="tab-bar">
+        <a href="dashboard.html" class="tab-item active">🏠<br>Inicio</a>
+        <a href="../profile.html" class="tab-item">⚙️<br>Perfil</a>
+    </nav>
+
     <script type="module">
-        // Importación directa desde la misma carpeta
-        import { auth, db } from './firebase-config.js';
+        // USAMOS ../ PARA SALIR DE LA CARPETA PAGUE Y BUSCAR EL ARCHIVO AFUERA
+        import { auth, db } from '../firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                console.log("✅ Usuario detectado:", user.email);
-                document.getElementById('statusAccount').innerText = "Sesión activa";
-
-                // Intento de cargar datos de Firestore
+                // El usuario está logueado
+                document.body.style.display = "block"; // Mostramos la página
+                
                 try {
-                    if (db) {
-                        const userRef = doc(db, "usuarios", user.uid);
-                        const docSnap = await getDoc(userRef);
-
-                        if (docSnap.exists()) {
-                            document.getElementById('userName').innerText = docSnap.data().nombre;
-                        } else {
-                            // Si no hay documento, usamos el nombre del correo
-                            document.getElementById('userName').innerText = user.email.split('@')[0];
-                        }
-                    } else {
-                        throw new Error("Variable 'db' no definida");
+                    const docRef = doc(db, "usuarios", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        document.getElementById('userName').innerText = docSnap.data().nombre;
                     }
                 } catch (error) {
-                    console.error("Error al obtener datos:", error);
-                    // Fallback amigable: mostrar el nombre desde el correo
-                    document.getElementById('userName').innerText = user.email.split('@')[0];
+                    console.log("Error al obtener datos:", error);
                 }
-
             } else {
-                console.log("❌ Sin sesión. Redirigiendo...");
-                // Esperamos un poco antes de redirigir para evitar errores de carga lenta
+                // Si no hay sesión después de 2 segundos, lo manda afuera
                 setTimeout(() => {
                     if (!auth.currentUser) {
                         window.location.href = "../index.html";
                     }
-                }, 3000);
+                }, 2000);
             }
         });
     </script>
