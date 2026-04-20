@@ -2,26 +2,64 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - BolsoApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BolsoApp - Registro</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f6; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2D5AFE; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        :root { --blue: #2D5AFE; --bg: #F0F2F5; --text: #1C1E21; --white: #ffffff; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card { 
+            background: var(--white); 
+            padding: 30px; 
+            border-radius: 28px; 
+            width: 100%; 
+            max-width: 400px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+        }
+        h2 { margin: 0 0 10px; text-align: center; }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin-bottom: 10px; 
+            border: 1px solid #E4E6EB; 
+            border-radius: 14px; 
+            font-size: 15px; 
+            background: #F7F8FA; 
+        }
+        .btn-primary { 
+            width: 100%; 
+            padding: 16px; 
+            background: var(--blue); 
+            color: white; 
+            border: none; 
+            border-radius: 14px; 
+            font-size: 16px; 
+            font-weight: 700; 
+            margin-top: 10px;
+        }
+        .link { text-align: center; color: var(--blue); text-decoration: none; font-size: 14px; display: block; margin-top: 15px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <img src="BolsoApp.png" alt="Logo" style="width: 80px;">
-        <h2>Crear Cuenta</h2>
+        <h2>Crea tu cuenta</h2>
         <form id="regForm">
-            <input type="text" id="regName" placeholder="Nombre completo" required>
-            <input type="email" id="regEmail" placeholder="Correo electrónico" required>
-            <input type="password" id="regPass" placeholder="Contraseña (mín. 6 caracteres)" required>
-            <button type="submit">Registrarme</button>
+            <input type="text" id="fullName" placeholder="Nombre y Apellido" required>
+            <input type="text" id="cedula" placeholder="Cédula de Identidad" required>
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" required>
+            <button type="submit" class="btn-primary">Registrarse</button>
         </form>
-        <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+        <a href="login.html" class="link">¿Ya tienes cuenta? Inicia sesión</a>
     </div>
 
     <script type="module">
@@ -31,26 +69,15 @@
 
         document.getElementById('regForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nombre = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                const user = userCredential.user;
-                
-                // Guardar nombre en Firestore
-                await setDoc(doc(db, "usuarios", user.uid), {
-                    nombre: nombre,
-                    email: email,
-                    fechaCreado: new Date()
+                const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
+                await setDoc(doc(db, "usuarios", cred.user.uid), {
+                    name: fullName.value,
+                    cedula: cedula.value,
+                    email: email.value
                 });
-
-                alert("¡Cuenta creada!");
-                window.location.href = "dashboard.html";
-            } catch (error) {
-                alert("Error: " + error.message);
-            }
+                window.location.href = "bienvenida.html";
+            } catch (err) { alert("Error: " + err.message); }
         });
     </script>
 </body>
