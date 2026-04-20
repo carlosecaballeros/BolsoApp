@@ -3,66 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BolsoApp - Estado del Grupo</title>
+    <title>Dashboard - BolsoApp</title>
     <link rel="stylesheet" href="app.css">
-    <style>
-        .header { 
-            background: var(--blue); 
-            color: var(--white); 
-            padding: 40px 20px 20px; 
-            border-radius: 0 0 30px 30px; 
-        }
-        .group-status-card {
-            background: var(--white);
-            margin-top: -30px;
-            padding: 20px;
-            border-radius: 24px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
-        .progress-container {
-            background: #eee;
-            border-radius: 10px;
-            height: 12px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        .progress-bar {
-            background: var(--success);
-            height: 100%;
-            width: 0%; /* Se actualiza con JS */
-            transition: width 0.5s;
-        }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .badge-paid { background: #e6f7ed; color: #00A33C; }
-        .badge-pending { background: #fff4e5; color: #FF9500; }
-    </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>Hola, <span id="userName">...</span></h1>
-        <p>Estado de tus grupos de ahorro</p>
-    </div>
-
     <div class="mobile-container">
-        <div id="activeGroupsContainer">
-            </div>
+        <header style="margin-bottom: 20px;">
+            <h2 style="margin:0;">Hola, <span id="userName">...</span></h2>
+            <p id="userCedula" style="color:var(--gray); margin:5px 0;"></p>
+        </header>
 
-        <div class="section-title">Lista de Pagos del Ciclo</div>
-        <div class="list" id="paymentsList">
-            <p style="text-align: center; color: var(--gray);">Cargando historial de pagos...</p>
+        <div id="activeGroups">
+            <p style="color:var(--gray)">No tienes bolsos activos todavía.</p>
         </div>
+
+        <button id="btnPago" class="btn-primary" style="display:none; margin-top:20px;" onclick="window.location.href='pagos.html'">
+            Registrar Pago de Hoy
+        </button>
     </div>
 
-    <button class="btn-primary" style="margin: 20px 16px; width: calc(100% - 32px);" onclick="window.location.href='pagos.html'">
-        Registrar mi pago de hoy
-    </button>
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active"><span>🏠</span><span>Inicio</span></a>
+        <a href="historial.html" class="nav-item"><span>🕒</span><span>Historial</span></a>
+        <a href="grupos.html" class="nav-item nav-item-center"><span>+</span></a>
+        <a href="avisos.html" class="nav-item"><span>🔔</span><span>Avisos</span></a>
+        <a href="perfil.html" class="nav-item"><span>👤</span><span>Perfil</span></a>
+    </nav>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
@@ -71,69 +37,17 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                document.body.style.display = "block";
-                
-                // 1. Obtener nombre del usuario
                 const uSnap = await getDoc(doc(db, "usuarios", user.uid));
-                if (uSnap.exists()) document.getElementById('userName').innerText = uSnap.data().name.split(' ')[0];
+                if (uSnap.exists()) {
+                    document.getElementById('userName').innerText = uSnap.data().name;
+                    document.getElementById('userCedula').innerText = "V-" + uSnap.data().cedula;
+                }
 
-                // 2. Escuchar los grupos donde participa
-                const qPart = query(collection(db, "participantes_grupo"), where("usuarioId", "==", user.uid));
-                onSnapshot(qPart, (snapPart) => {
-                    const container = document.getElementById('activeGroupsContainer');
-                    container.innerHTML = "";
-                    
-                    snapPart.forEach(async (docPart) => {
-                        const gId = docPart.data().grupoId;
-                        const gSnap = await getDoc(doc(db, "grupos", gId));
-                        
-                        if (gSnap.exists()) {
-                            const g = gSnap.data();
-                            // Cálculo de progreso (esto asume que tienes un campo de cuántos han pagado)
-                            const porcentaje = (g.pagosRecibidos / g.participantesMax) * 100;
-                            
-                            container.innerHTML += `
-                                <div class="group-status-card">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <b style="font-size:18px;">${g.nombre}</b>
-                                        <span class="badge ${porcentaje === 100 ? 'badge-paid' : 'badge-pending'}">
-                                            ${porcentaje === 100 ? 'Listo para entrega' : 'En recolecta'}
-                                        </span>
-                                    </div>
-                                    <p style="font-size:13px; color:var(--gray); margin: 5px 0;">Monto total a entregar: <b>Bs. ${g.monto.toLocaleString('es-VE')}</b></p>
-                                    
-                                    <div class="progress-container">
-                                        <div class="progress-bar" style="width: ${porcentaje}%"></div>
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600;">
-                                        <span>${g.pagosRecibidos} de ${g.participantesMax} pagos</span>
-                                        <span>${Math.round(porcentaje)}%</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
+                // Lógica de Botón de Pago
+                const q = query(collection(db, "participantes_grupo"), where("usuarioId", "==", user.uid));
+                onSnapshot(q, (snap) => {
+                    document.getElementById('btnPago').style.display = snap.empty ? "none" : "block";
                 });
-
-                // 3. Lista de quién ha pagado (Colección movimientos/pagos)
-                const qPagos = query(collection(db, "movimientos"), orderBy("fecha", "desc"));
-                onSnapshot(qPagos, (snap) => {
-                    const list = document.getElementById('paymentsList');
-                    list.innerHTML = "";
-                    snap.forEach(d => {
-                        const p = d.data();
-                        list.innerHTML += `
-                            <div class="item">
-                                <div class="item-info">
-                                    <b>${p.usuarioNombre || 'Socio'}</b>
-                                    <span>${p.fecha.toDate().toLocaleDateString()}</span>
-                                </div>
-                                <div class="badge badge-paid">PAGADO</div>
-                            </div>
-                        `;
-                    });
-                });
-
             } else { window.location.href = "login.html"; }
         });
     </script>
