@@ -2,37 +2,49 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Buscar Grupos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil</title>
     <link rel="stylesheet" href="app.css">
 </head>
 <body>
     <div class="mobile-container">
-        <h2 class="section-title">Grupos Disponibles</h2>
-        
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <b style="font-size:18px;">Bolso $100</b>
-                <p style="margin:5px 0; font-size:12px; color:var(--gray);">Cuota: Bs. 360 (10 pers.)</p>
-            </div>
-            <button class="btn-primary" style="width:auto; padding:10px 20px;">Unirse</button>
+        <h2 class="section-title">Editar Perfil</h2>
+        <div class="card">
+            <input type="text" id="pName" placeholder="Nombre completo">
+            <input type="text" id="pCedula" placeholder="Cédula">
+            <input type="text" id="pAddress" placeholder="Dirección completa">
+            <input type="text" id="pEstado" placeholder="Estado">
+            <input type="text" id="pCiudad" placeholder="Ciudad">
+            <button class="btn-primary" onclick="guardar()">Guardar Cambios</button>
         </div>
 
         <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <b style="font-size:18px;">Bolso $500</b>
-                <p style="margin:5px 0; font-size:12px; color:var(--gray);">Cuota: Bs. 1.800 (10 pers.)</p>
-            </div>
-            <button class="btn-primary" style="width:auto; padding:10px 20px;">Unirse</button>
+            <span>Modo Oscuro</span>
+            <input type="checkbox" id="themeToggle" style="width:auto; margin:0;">
         </div>
+        
+        <button style="color:red; background:none; border:none; width:100%; margin-top:20px;" onclick="auth.signOut()">Cerrar Sesión</button>
     </div>
 
     <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item"><span>🏠</span><span>Inicio</span></a>
         <a href="historial.html" class="nav-item"><span>🕒</span><span>Historial</span></a>
-        <a href="grupos.html" class="nav-item nav-item-center active"><span>+</span></a>
+        <a href="grupos.html" class="nav-item nav-item-center"><span>+</span></a>
         <a href="avisos.html" class="nav-item"><span>🔔</span><span>Avisos</span></a>
-        <a href="perfil.html" class="nav-item"><span>👤</span><span>Perfil</span></a>
+        <a href="perfil.html" class="nav-item active"><span>👤</span><span>Perfil</span></a>
     </nav>
+
+    <script type="module">
+        const btn = document.getElementById('themeToggle');
+        btn.addEventListener('change', () => {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+            btn.checked = true;
+        }
+    </script>
 </body>
 </html>
